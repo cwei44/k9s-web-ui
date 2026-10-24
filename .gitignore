@@ -1,0 +1,12 @@
+/dist/
+/k9s-web-ui
+/node_modules/
+*.tar.gz
+*.sha256
+.env
+.env.*
+*.key
+*.pem
+.kube/
+/etc/
+*.log

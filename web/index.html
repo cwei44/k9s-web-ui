@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0e11" />
+  <title>K9s Web UI — Kubernetes dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="/k9s/gpu.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#" aria-label="K9s home"><span class="brand-mark">k9<span>s</span><i></i></span><span class="brand-label">CLUSTER COCKPIT</span></a>
+    <button class="cluster-switch" id="cluster-switch"><span class="cluster-symbol">⎈</span><span><strong id="cluster-name">Connecting…</strong><small><i class="dot green"></i> Waiting for cluster </small></span><span class="chevrons">⌃<br>⌄</span></button>
+    <div class="nav-label">WORKSPACE</div>
+    <nav id="navigation"></nav>
+    <div class="sidebar-bottom"><div class="cluster-health"><span class="dot green"></span> Waiting for cluster <span>↗</span></div><button class="shortcut-button" id="help-button"><span>Keyboard shortcuts</span><kbd>?</kbd></button><div class="profile"><div class="avatar">K8</div><span><strong>Cluster observer</strong><small>Host Kubernetes login</small></span><span class="profile-menu">•••</span></div></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> Connecting… <span>/</span> <strong id="breadcrumb-page">Overview</strong></div><div class="topbar-actions"><button id="command-button" class="command-button"><span>⌕</span> Jump to anything <kbd>⌘ K</kbd></button><span class="top-divider"></span><button class="icon-button notification" id="notification-button" aria-label="View alerts"><span data-icon="bell"></span><i></i></button><div class="small-avatar">K8</div></div></header>
+    <main>
+      <div class="page-heading"><div><div class="eyebrow"><span class="dot green"></span> YOUR CLUSTER, AT A GLANCE</div><h1 id="page-title">Cluster overview</h1><p id="page-description">A little clarity in your Kubernetes universe.</p></div><div class="heading-actions"><span class="updated"><span class="live-dot"></span> <span id="last-updated">Live updates</span></span><button class="button" id="refresh-button"><span data-icon="refresh"></span> Refresh</button></div></div>
+      <section class="cluster-banner"><div class="banner-icon" data-icon="cluster"></div><div class="banner-title"><strong id="banner-name">Connecting…</strong><span><i class="dot green"></i> Waiting for Kubernetes</span></div><div class="banner-meta"><span>CONTEXT<strong id="context-name">Connecting…</strong></span><span>LAST SUCCESS<strong>—</strong></span><span class="banner-tag">READ ONLY</span></div></section>
+      <section class="metrics" id="metrics"></section>
+      <section class="charts-section" id="charts-section"><article class="panel chart-panel"><div class="panel-heading"><div><h2>Resource utilization</h2><p>A little headroom goes a long way.</p></div><div class="segmented" id="time-range"><button data-range="1h" class="active">1h</button><button data-range="6h">6h</button><button data-range="24h">24h</button></div></div><div class="chart-legend"><span><i class="legend-dot cpu"></i> CPU <strong>—</strong></span><span><i class="legend-dot memory"></i> Memory <strong>—</strong></span><span class="chart-unit">% utilization</span></div><div id="resource-chart" class="resource-chart"></div></article><article class="panel activity-panel"><div class="panel-heading"><h2>Recent activity</h2><button class="text-button" id="view-events">View all <span>↗</span></button></div><div id="activity"></div><div class="activity-foot"><span class="dot green"></span> Watching for changes</div></article></section>
+      <section class="panel resources-panel"><div class="resource-heading"><div class="resource-tabs" id="resource-tabs"></div><span class="resource-total" id="resource-total"></span></div><div class="table-toolbar"><div class="filter-input"><span data-icon="search"></span><input id="resource-search" placeholder="Filter resources…" aria-label="Filter resources"><kbd>/</kbd></div><div class="table-filters"><label class="select-wrap"><span data-icon="layers"></span><select id="namespace-filter" aria-label="Namespace"><option value="all">All namespaces</option><option>default</option><option>kube-system</option><option>monitoring</option><option>production</option></select></label><label class="select-wrap"><span class="dot green"></span><select id="status-filter" aria-label="Status"><option value="all">All statuses</option><option>Running</option><option>Pending</option><option>CrashLoopBackOff</option></select></label></div></div><div class="table-scroll"><table><thead id="table-head"></thead><tbody id="resource-body"></tbody></table></div><div class="table-footer"><span id="table-count"></span><span><kbd>↑</kbd><kbd>↓</kbd> navigate <kbd>↵</kbd> inspect <kbd>/</kbd> filter</span></div></section>
+      <footer class="page-footer"><span><i class="dot green"></i> Connected to Connecting… </span><span>Made for the way you kubectl. <span class="footer-brand">k9s ↗</span></span></footer>
+    </main>
+  </div>
+  <div id="drawer-backdrop" class="drawer-backdrop" hidden></div><aside id="detail-drawer" class="detail-drawer" aria-label="Resource details" hidden></aside>
+  <dialog id="command-dialog"><div class="palette-search"><span data-icon="search"></span><input id="command-search" placeholder="Where would you like to go?" aria-label="Search commands"><kbd>esc</kbd></div><div id="command-results"></div><div class="palette-footer">Navigate your cluster at the speed of thought.</div></dialog>
+  <dialog id="help-dialog"><div class="dialog-heading"><h2>Keyboard shortcuts</h2><button class="icon-button close-dialog" aria-label="Close">×</button></div><div class="shortcut-list"><span>Open command palette <kbd>⌘ / Ctrl K</kbd></span><span>Filter resources <kbd>/</kbd></span><span>Navigate rows <kbd>↑ ↓</kbd></span><span>Inspect selected resource <kbd>Enter</kbd></span><span>Close panel <kbd>Esc</kbd></span><span>Show shortcuts <kbd>?</kbd></span></div></dialog>
+  <div id="toast" role="status" hidden></div>
+  <script src="app.js"></script>
+<script src="/k9s/gpu.js"></script>
+</body>
+</html>

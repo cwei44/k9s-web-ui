@@ -1,0 +1,17 @@
+K9s Web UI
+Copyright 2026 K9s Web UI contributors
+
+Independent Kubernetes dashboard; not an official derailed/k9s project.
+The repository contains the dashboard frontend, Go HTTP API, NVIDIA DCGM
+collector, launcher and installer source. It does not contain the original
+private k9s-ui executable, upstream k9s or kubectl binaries.
+
+Go builds include the Go runtime and standard library. Their license and
+patent grant are reproduced under licenses/. The build uses no third-party
+Go modules. Frontend runtime assets are served locally without external fonts.
+Development-only npm dependencies retain their own licenses and are not
+included by the package script.
+
+Optional kubectl downloads are obtained from the official Kubernetes release
+host and checked against its published SHA-256. Kubernetes source and license:
+https://github.com/kubernetes/kubernetes
