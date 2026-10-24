@@ -21,3 +21,6 @@ jobs:
       - run: make package
       - run: make docker
       - run: sudo python3 scripts/test-container.py
+      - run: python3 scripts/package-container.py
+      - run: sha256sum -c SHA256SUMS
+        working-directory: dist/k9s-web-ui-container

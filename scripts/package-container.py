@@ -23,8 +23,9 @@ if bundle.exists():
 for name in ('README.md', 'LICENSE', 'NOTICE'):
     shutil.copyfile(root / name, bundle / name)
 shutil.copytree(root / 'licenses', bundle / 'licenses')
-shutil.copyfile(root / 'scripts' / 'install-container.sh', bundle / 'scripts' / 'install-container.sh')
-(bundle / 'scripts' / 'install-container.sh').chmod(0o755)
+for script in ('install-container.sh', 'update-container.sh'):
+    shutil.copyfile(root / 'scripts' / script, bundle / 'scripts' / script)
+    (bundle / 'scripts' / script).chmod(0o755)
 source = bundle / 'src'
 source.mkdir()
 for file in [root / 'Dockerfile', root / '.dockerignore', root / 'go.mod', root / 'LICENSE', root / 'NOTICE', *root.glob('*.go')]:
@@ -46,6 +47,8 @@ docker load -i image.tar.gz
 K9S_WEB_UI_SKIP_BUILD=1 K9S_WEB_UI_IMAGE=''' + "'" + image + "'" + ''' ./scripts/install-container.sh "$@"
 ''')
 (bundle / 'install.sh').chmod(0o755)
+(bundle / 'update.sh').write_text((bundle / 'install.sh').read_text().replace('./scripts/install-container.sh', './scripts/update-container.sh'))
+(bundle / 'update.sh').chmod(0o755)
 files = sorted(p for p in bundle.rglob('*') if p.is_file())
 (bundle / 'SHA256SUMS').write_text(''.join(
     hashlib.sha256(p.read_bytes()).hexdigest() + '  ' + str(p.relative_to(bundle)) + '\n'

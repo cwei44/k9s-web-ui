@@ -1,31 +1,32 @@
-/* Neutral charcoal surfaces; blue navigation and chart accents. */
+/* HCIBench-style Clarity dark palette. No external stylesheets or fonts required. */
 :root {
   color-scheme: dark;
-  --bg: #14161a;
-  --side: #181b20;
-  --panel: #1c1f25;
-  --surface: #242830;
-  --inset: #15181d;
-  --line: #303640;
-  --line-strong: #454d5a;
-  --text: #e5e9f0;
-  --secondary: #bbc3cf;
-  --muted: #98a3b3;
-  --accent: #8ab4ef;
-  --accent-rgb: 138 180 239;
-  --accent-soft: #263345;
-  --accent-line: #455d7d;
-  --success: #83c6a3;
-  --success-soft: #23382e;
-  --warning: #e1bc7c;
-  --warning-soft: #352d22;
-  --warning-line: #76603d;
-  --danger: #e79b9b;
-  --memory: #b3a6da;
-  --memory-soft: #302b3f;
-  --memory-line: #514765;
-  --mono: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --bg: #17242b;
+  --side: #1b2a32;
+  --header: #0e161b;
+  --panel: #21333b;
+  --surface: #2b424e;
+  --inset: #1b2a32;
+  --line: #0e161b;
+  --line-strong: #4f6472;
+  --text: #eaedf0;
+  --secondary: #acbac3;
+  --muted: #9eb1bd;
+  --accent: #4aaed9;
+  --accent-rgb: 74 174 217;
+  --accent-soft: #324f62;
+  --accent-line: #355568;
+  --success: #a2d870;
+  --success-soft: #2b3f30;
+  --warning: #f5bc69;
+  --warning-soft: #443a2a;
+  --warning-line: #8b6938;
+  --danger: #f29a95;
+  --memory: #b7a7df;
+  --memory-soft: #353347;
+  --memory-line: #5b5278;
+  --mono: Consolas, 'Liberation Mono', ui-monospace, monospace;
+  --font: Metropolis, 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px}
@@ -355,3 +356,36 @@ h1{font-size:24px}
 .namespace-pill.monitoring { background: var(--surface); color: var(--secondary); border-color: var(--line-strong); }
 .cluster-banner { background: var(--panel); }
 .banner-tag { color: var(--secondary); }
+
+/* Match HCIBench's dark header, compact corners and cyan outlined actions. */
+.sidebar { padding-top: 0; }
+.brand { height: 60px; flex-shrink: 0; margin: 0 -17px; padding: 0 24px; background: var(--header); }
+.brand-mark { font-size: 27px; }
+.brand-label { font-size: 9px; letter-spacing: 1px; }
+.cluster-switch { margin-top: 24px; margin-bottom: 24px; }
+.topbar { height: 60px; background: var(--header); }
+h1 { font-weight: 300; letter-spacing: normal; }
+h2 { font-size: 14px; font-weight: 500; }
+.panel, .metric, .cluster-banner, .cluster-switch, .banner-icon, .select-wrap, .filter-input { border-radius: 3px; }
+.metric, .panel { box-shadow: 0 2px 0 var(--line); }
+.button { border-color: var(--accent); color: var(--accent); background: transparent; border-radius: 3px; min-height: 32px; font-size: 11px; font-weight: 500; letter-spacing: .03em; text-transform: uppercase; }
+.button:hover { background: rgb(255 255 255 / .08); color: #57c8ea; border-color: #57c8ea; }
+.nav-item { font-size: 13px; border-radius: 3px; }
+.nav-item.active { color: var(--text); }
+.nav-item.active .nav-count { background: var(--header); color: var(--accent); }
+.metric-label, .page-heading p { font-size: 12px; }
+.metric-foot, .panel-heading p { font-size: 11px; }
+.resource-tabs button { font-size: 12px; }
+.filter-input input, .select-wrap select { font-size: 11px; }
+th { font-size: 10px; }
+td, .status-pill { font-size: 11px; }
+.banner-title strong { font-size: 14px; }
+.banner-meta .banner-tag { color: var(--accent); border-color: var(--accent-line); }
+@media(max-width:900px) {
+  .sidebar { padding-top: 0; }
+  .brand { margin: 0 -9px; padding: 0 12px; }
+}
+@media(max-width:600px) {
+  .metric-foot { font-size: 10px; }
+  .metric-value { font-size: 24px; }
+}

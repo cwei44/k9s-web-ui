@@ -119,6 +119,46 @@ setup. No kubeconfig or dashboard password is included in the archive.
 HTTP Basic authentication requires HTTPS or an SSH tunnel on an untrusted network.
 Reuse your existing Apache TLS configuration when needed.
 
+## Update an existing container deployment
+
+The dashboard uses a HCIBench-style Clarity dark palette: blue-gray surfaces,
+cyan actions, a dark header and compact cards. To update from a source checkout,
+run as root on the Docker host:
+
+```sh
+cd /path/to/k9s-web-ui
+git pull --ff-only
+./scripts/update-container.sh
+```
+
+The script builds the new image and replaces the running UI container. It retains
+the existing username/password, mounts, context and namespace flags, environment,
+resource limits, security settings and restart policy. Apache configuration and
+the host kubectl helper remain in place. Expect a brief interruption while the
+container is replaced; readiness is verified before removing the previous
+container. A failed activation automatically restores the previous container.
+Cluster authorization errors do not prevent a UI update.
+
+For an offline archive, extract the new version into a fresh directory and use
+the archive's update entrypoint:
+
+```sh
+mkdir k9s-web-ui-update
+tar -xzf k9s-web-ui-container-linux-amd64.tar.gz -C k9s-web-ui-update
+cd k9s-web-ui-update/k9s-web-ui-container
+./update.sh
+```
+
+`update.sh` verifies checksums and loads the included image before updating.
+Use `--prefix /your/install/path` with either update script if the original
+installation used a custom prefix. An image already built or loaded locally can
+be used with `K9S_WEB_UI_SKIP_BUILD=1 K9S_WEB_UI_IMAGE=your-image ./scripts/update-container.sh`.
+The updater requires the existing managed container and helper to be running.
+It updates the UI container; it does not replace the host helper executable.
+Use `install.sh` / `install-container.sh` only for a new installation.
+
+After updating, hard-refresh **http://HOST-IP/k9s/** with Ctrl+Shift+R.
+
 ## Native build and run
 
 Supported package target: **Linux x86-64**. Building needs Go 1.23+ and Make.
@@ -268,7 +308,9 @@ GPU navigation/filtering, and HTML escaping. No live cluster or credentials are
 needed. GitHub Actions runs these checks and builds the installation package.
 It also builds the Docker image and checks authentication, the private host
 bridge, context switching, and the container's port-80 server using a fake host
-kubectl. Run that integration check locally as root with `make test-container`,
+kubectl. Update checks verify preserved settings and rollback from an image that
+cannot start, and CI verifies the portable archive's checksums.
+Run the container integration check locally as root with `make test-container`,
 matching the installer and the root-owned private Unix socket.
 
 ## Distribution and licensing

@@ -32,7 +32,7 @@ import (
 //go:embed web/*
 var assets embed.FS
 
-const packageVersion = "1.2.1"
+const packageVersion = "1.3.0"
 
 var bundle string
 
@@ -96,6 +96,8 @@ func main() {
 		err = install(os.Args[2:])
 	case "container-install":
 		err = installContainer(os.Args[2:])
+	case "container-update":
+		err = updateContainer(os.Args[2:])
 	case "host-bridge":
 		err = hostBridgeCommand(os.Args[2:])
 	case "start", "stop", "status":
@@ -117,6 +119,7 @@ func usage() {
   ./k9s-web-ui doctor [--offline]
   ./k9s-web-ui install [--mode auto|apache|standalone]   (run as root)
   ./scripts/install-container.sh                       (Docker deployment, run on host as root)
+  ./scripts/update-container.sh                        (update an existing container deployment)
   ./k9s-web-ui version
 Use a command's --help for its options. Authentication is enabled by default.
 Uses the current Kubernetes context from KUBECONFIG or ~/.kube/config.
