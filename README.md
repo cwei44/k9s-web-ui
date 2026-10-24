@@ -268,7 +268,8 @@ GPU navigation/filtering, and HTML escaping. No live cluster or credentials are
 needed. GitHub Actions runs these checks and builds the installation package.
 It also builds the Docker image and checks authentication, the private host
 bridge, context switching, and the container's port-80 server using a fake host
-kubectl. Run that integration check locally with `make test-container`.
+kubectl. Run that integration check locally as root with `make test-container`,
+matching the installer and the root-owned private Unix socket.
 
 ## Distribution and licensing
 

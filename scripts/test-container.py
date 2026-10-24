@@ -13,6 +13,9 @@ import urllib.error
 import urllib.request
 import uuid
 
+if os.geteuid() != 0:
+    raise SystemExit('Run this container test as root, matching the host installer and private socket ownership.')
+
 root = Path(__file__).resolve().parents[1]
 image = os.environ.get('K9S_WEB_UI_IMAGE', 'k9s-web-ui:local')
 name = 'k9s-ui-smoke-' + uuid.uuid4().hex[:12]

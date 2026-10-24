@@ -20,4 +20,4 @@ jobs:
       - run: make test
       - run: make package
       - run: make docker
-      - run: python3 scripts/test-container.py
+      - run: sudo python3 scripts/test-container.py
