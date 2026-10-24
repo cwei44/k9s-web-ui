@@ -32,7 +32,7 @@ import (
 //go:embed web/*
 var assets embed.FS
 
-const packageVersion = "1.2.0"
+const packageVersion = "1.2.1"
 
 var bundle string
 
