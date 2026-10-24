@@ -32,11 +32,12 @@ import (
 //go:embed web/*
 var assets embed.FS
 
-const packageVersion = "1.1.0"
+const packageVersion = "1.2.0"
 
 var bundle string
 
 type options struct {
+	HostBridge                                                                                         string
 	Kubeconfig, Context, Namespace, Kubectl, Listen, PasswordFile, Username, GPUNamespace, GPUSelector string
 	Offline, NoAuth                                                                                    bool
 }
@@ -51,6 +52,7 @@ func defaults() options {
 	return options{Kubeconfig: kc, Kubectl: filepath.Join(bundle, "bin", "kubectl"), Listen: "127.0.0.1:8080", PasswordFile: filepath.Join(config, "k9s-web-ui", "password"), Username: "admin", GPUNamespace: "auto", GPUSelector: "app=nvidia-dcgm-exporter"}
 }
 func optionsFlags(fs *flag.FlagSet, o *options) {
+	fs.StringVar(&o.HostBridge, "host-bridge", o.HostBridge, "Unix socket for the host kubectl helper (no client download or kubeconfig inside container)")
 	fs.StringVar(&o.Kubeconfig, "kubeconfig", o.Kubeconfig, "Optional override; defaults to host KUBECONFIG or ~/.kube/config")
 	fs.StringVar(&o.Context, "context", o.Context, "Kubernetes context; default is current context")
 	fs.StringVar(&o.Namespace, "namespace", o.Namespace, "Limit dashboard resources to a namespace")
@@ -92,6 +94,10 @@ func main() {
 		}
 	case "install":
 		err = install(os.Args[2:])
+	case "container-install":
+		err = installContainer(os.Args[2:])
+	case "host-bridge":
+		err = hostBridgeCommand(os.Args[2:])
 	case "start", "stop", "status":
 		err = control(os.Args[1])
 	case "version":
@@ -110,6 +116,7 @@ func usage() {
   ./k9s-web-ui serve [--listen 0.0.0.0:8080]
   ./k9s-web-ui doctor [--offline]
   ./k9s-web-ui install [--mode auto|apache|standalone]   (run as root)
+  ./scripts/install-container.sh                       (Docker deployment, run on host as root)
   ./k9s-web-ui version
 Use a command's --help for its options. Authentication is enabled by default.
 Uses the current Kubernetes context from KUBECONFIG or ~/.kube/config.
@@ -123,6 +130,9 @@ func (o options) args(a ...string) []string {
 	return append(r, a...)
 }
 func (o options) run(a ...string) ([]byte, error) {
+	if o.HostBridge != "" {
+		return callHostBridge(o, a...)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 18*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, o.Kubectl, o.args(a...)...)
@@ -154,6 +164,13 @@ func minor(v string) (int, error) {
 	return strconv.Atoi(m[2])
 }
 func prepare(o *options) error {
+	if o.HostBridge != "" {
+		if err := checkHostBridge(o.HostBridge); err != nil {
+			return err
+		}
+		log.Printf("Using host kubectl through %s; Kubernetes login stays on the host", o.HostBridge)
+		return nil
+	}
 	if resolved, e := exec.LookPath(o.Kubectl); e == nil {
 		o.Kubectl, _ = filepath.Abs(resolved)
 	}

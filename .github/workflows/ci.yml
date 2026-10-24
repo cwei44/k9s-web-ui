@@ -19,3 +19,5 @@ jobs:
           cache: npm
       - run: make test
       - run: make package
+      - run: make docker
+      - run: python3 scripts/test-container.py

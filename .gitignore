@@ -10,3 +10,4 @@
 .kube/
 /etc/
 *.log
+__pycache__/

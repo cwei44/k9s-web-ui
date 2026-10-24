@@ -1,0 +1,10 @@
+**
+!Dockerfile
+!go.mod
+!*.go
+!web/
+!web/**
+!LICENSE
+!NOTICE
+!licenses/
+!licenses/**

@@ -16,9 +16,110 @@ This is an independent project. It is not an official web version of
 - HTTP Basic authentication with a locally generated password.
 - Static Go executable with embedded HTML, JavaScript and CSS; no CDN or external fonts.
 - Existing Apache port 80 integration, or a built-in HTTP server.
-- Automatic SHA-256-verified kubectl download when no suitable client is available.
+- Container deployment uses the exact host kubectl, including vendor builds and credential plugins.
+- Native deployment can resolve a missing or incompatible kubectl automatically.
 
-## Build and run
+## Container installation
+
+Run on a **Linux Docker host**, as root in the environment where `kubectl` works:
+
+```sh
+git clone https://github.com/cwei44/k9s-web-ui.git
+cd k9s-web-ui
+./scripts/install-container.sh
+```
+
+Open **http://HOST-IP/k9s/** on port **80**. Username: `admin`.
+
+```sh
+cat /opt/k9s-web-ui-container/dashboard/dashboard-password
+```
+
+The script builds a minimal image and installs its static host helper. Docker
+Engine/CLI and the host's kubectl must already exist. Go, Node, Python, a shell
+inside the image, and terminal k9s are not runtime dependencies. The build needs
+internet access to fetch the Go build image; the finished UI image has no base
+operating system or downloaded runtime packages. Linux amd64 is tested, including
+Docker 18.06; Docker Desktop, remote daemons and rootless Docker are not supported.
+
+The installer chooses the web server automatically:
+
+| Host | Result |
+| --- | --- |
+| Apache/httpd available | Reuse Apache on port 80; proxy `/k9s/` to the container on `127.0.0.1:19090`. |
+| No Apache/httpd; port 80 free | The container's own HTTP server listens on port 80. |
+| Another service owns port 80 | Stop with an error; no automatic switch to another port. |
+
+Apache configuration is backed up, syntax checked and verified after activation.
+Failed installation restores the Apache configuration. The earlier managed
+`setup-k9s-httpd.sh` route is migrated while retaining its IP/authentication rules.
+Unrecognized conflicting routes or custom virtual hosts require manual Apache
+integration; the installer stops before changing them. Apache 2.4.47+ is required.
+An installed but stopped Apache is started when its configuration is suitable.
+
+```mermaid
+flowchart LR
+  Browser -->|port 80| Front[Existing Apache or container HTTP server]
+  Front --> UI[UI container]
+  UI -->|private Unix socket| Helper[Host helper]
+  Helper --> Kubectl[Host kubectl]
+  Kubectl --> Cluster[Kubernetes current context]
+```
+
+The helper executes a fixed allowlist of read-only dashboard queries using the
+host's actual kubectl, libraries, login files and credential plugins. The UI
+container mounts only the helper's private socket directory and its dashboard
+password directory. It does not mount a kubeconfig, the host filesystem, or the
+Docker socket. The host helper runs as root and is managed by systemd where
+available; otherwise it runs detached and needs a host-specific boot supervisor.
+
+No kubeconfig flag is needed. The installer selects host `KUBECONFIG`, or
+`~/.kube/config`, and follows later current-context/login changes in those files.
+It never downloads or substitutes another kubectl in container mode. An expired
+cluster login appears as a connection error in the dashboard; renew the login
+on the host and the next refresh picks it up. Environment variables are captured
+when installing, so later shell-only environment changes need updating in
+`/opt/k9s-web-ui-container/etc/host.env` and restarting the helper.
+
+```sh
+docker logs k9s-web-ui
+docker stop k9s-web-ui
+docker start k9s-web-ui
+systemctl status k9s-web-ui-host.service
+journalctl -u k9s-web-ui-host.service
+```
+
+Docker uses `--restart unless-stopped`; systemd enables the host helper at boot.
+Existing deployments are not overwritten. Installation metadata and Apache
+backups are in `/opt/k9s-web-ui-container/etc/`. An optional `--prefix` changes
+the installation directory. Use `--kubectl /path/to/kubectl` for a particular
+host binary, or `--backend-port 19091` if Apache's default backend port is busy.
+
+For an already built/loaded image:
+
+```sh
+K9S_WEB_UI_SKIP_BUILD=1 K9S_WEB_UI_IMAGE=k9s-web-ui:local ./scripts/install-container.sh
+```
+
+To distribute a package that installs without downloading the image or a compiler:
+
+```sh
+make package-container
+# Copy dist/k9s-web-ui-container-linux-amd64.tar.gz to another Linux amd64 host:
+tar -xzf k9s-web-ui-container-linux-amd64.tar.gz
+cd k9s-web-ui-container
+./install.sh
+```
+
+This archive includes the image, installer, checksums, source and licenses.
+The destination still needs Docker and a working host kubectl/login. `install.sh`
+verifies the package, loads the image, and performs the same automatic port-80
+setup. No kubeconfig or dashboard password is included in the archive.
+
+HTTP Basic authentication requires HTTPS or an SSH tunnel on an untrusted network.
+Reuse your existing Apache TLS configuration when needed.
+
+## Native build and run
 
 Supported package target: **Linux x86-64**. Building needs Go 1.23+ and Make.
 
@@ -87,7 +188,7 @@ Optional overrides:
 remain cluster-wide. GPU discovery has a separate namespace option. These flags
 are not a replacement for Kubernetes RBAC.
 
-## Install a service and reuse Apache
+## Native service installation
 
 Create a checksummed installation package first:
 
@@ -165,6 +266,9 @@ cluster data. Tests cover authentication, command/namespace restrictions,
 partial failures, context changes, GPU deduplication/MIG/sentinels, stale data,
 GPU navigation/filtering, and HTML escaping. No live cluster or credentials are
 needed. GitHub Actions runs these checks and builds the installation package.
+It also builds the Docker image and checks authentication, the private host
+bridge, context switching, and the container's port-80 server using a fake host
+kubectl. Run that integration check locally with `make test-container`.
 
 ## Distribution and licensing
 

@@ -96,6 +96,9 @@ func quote(s string) string {
 }
 func serveArgs(o options) []string {
 	a := []string{"serve", "--listen", o.Listen, "--kubeconfig", o.Kubeconfig, "--kubectl", o.Kubectl, "--password-file", o.PasswordFile, "--username", o.Username, "--gpu-namespace", o.GPUNamespace, "--gpu-selector", o.GPUSelector}
+	if o.HostBridge != "" {
+		a = append(a, "--host-bridge", o.HostBridge)
+	}
 	if o.Context != "" {
 		a = append(a, "--context", o.Context)
 	}
@@ -116,7 +119,7 @@ func serviceText(prefix string, o options) string {
 		cmd = append(cmd, quote(a))
 	}
 	home, _ := os.UserHomeDir()
-	return "[Unit]\nDescription=Portable K9s UI and GPU monitoring\nWants=network-online.target\nAfter=network-online.target\n\n[Service]\nType=simple\nUser=root\nWorkingDirectory=" + quote(prefix) + "\nEnvironment=" + quote("HOME="+home) + "\nEnvironment=" + quote("PATH="+os.Getenv("PATH")) + "\nExecStart=" + strings.Join(cmd, " ") + "\nRestart=on-failure\nRestartSec=5\nNoNewPrivileges=true\n\n[Install]\nWantedBy=multi-user.target\n"
+	return "[Unit]\nDescription=Portable K9s UI and GPU monitoring\nWants=network-online.target\nAfter=network-online.target\n\n[Service]\nType=simple\nUser=root\nWorkingDirectory=" + prefix + "\nEnvironment=" + quote("HOME="+home) + "\nEnvironment=" + quote("PATH="+os.Getenv("PATH")) + "\nExecStart=" + strings.Join(cmd, " ") + "\nRestart=on-failure\nRestartSec=5\nNoNewPrivileges=true\n\n[Install]\nWantedBy=multi-user.target\n"
 }
 func portFree(address string) bool {
 	l, e := net.Listen("tcp", address)
@@ -147,6 +150,9 @@ var confRE = regexp.MustCompile(`SERVER_CONFIG_FILE="([^"]+)"`)
 var apacheVersionRE = regexp.MustCompile(`Apache/(\d+)\.(\d+)\.(\d+)`)
 
 func apacheSetup(ctl, override, prefix string, port int) (config, body, snippet string, err error) {
+	return apacheSetupIgnoring(ctl, override, prefix, port, nil)
+}
+func apacheSetupIgnoring(ctl, override, prefix string, port int, ignored map[string]bool) (config, body, snippet string, err error) {
 	v, e := command(ctl, "-V")
 	if e != nil {
 		err = e
@@ -183,6 +189,9 @@ func apacheSetup(ctl, override, prefix string, port int) (config, body, snippet 
 	incRE := regexp.MustCompile(`(?m)^\s*\([^)]*\)\s+(/.*)$`)
 	conflicts := regexp.MustCompile(`(?mi)^\s*(?:<VirtualHost|ProxyPass(?:Match)?\s+"?(?:/"?\s|/k9s))`)
 	for _, m := range incRE.FindAllStringSubmatch(inc, -1) {
+		if ignored[strings.TrimSpace(m[1])] {
+			continue
+		}
 		b, e := os.ReadFile(strings.TrimSpace(m[1]))
 		if e != nil {
 			err = e
